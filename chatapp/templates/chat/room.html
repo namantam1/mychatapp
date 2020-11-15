@@ -1,0 +1,142 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Chat Room</title>
+</head>
+
+<body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="room" type="text" placeholder='room' value="chat_naman" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ room_name|json_script:"room-name" }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.5/redux.min.js"
+        integrity="sha512-P36ourTueX/PrXrD4Auc1kVLoTE7bkWrIrkaM0IG2X3Fd90LFgTRogpZzNBssay0XOXhrIgudf4wFeftdsPDiQ=="
+        crossorigin="anonymous"></script>
+    <script src="/static/rcwebsocket.js"></script>
+    <script>
+        const { createStore } = Redux;
+
+        // import { createStore } from 'redux'
+
+        /**
+         * This is a reducer - a function that takes a current state value and an
+         * action object describing "what happened", and returns a new state value.
+         * A reducer's function signature is: (state, action) => newState
+         *
+         * The Redux state should contain only plain JS objects, arrays, and primitives.
+         * The root state value is usually an object.  It's important that you should
+         * not mutate the state object, but return a new object if the state changes.
+         *
+         * You can use any conditional logic you want in a reducer. In this example,
+         * we use a switch statement, but it's not required.
+         */
+        const encodeId = id => `chat_${id}`
+        const decodeId = id => parseInt(id.split("_")[1])
+        const chat_state = {
+            chat_1: {
+                roomId: 1,
+                chatId: 1,
+                userId: 1,
+                text: "Hello",
+                seen: false,
+                imageUrl: "https://google.com",
+            }
+        }
+        // Actions
+        const ACTIONTYPE = {
+            addChat: 'addChat',
+            updateChat: 'updateChat'
+        }
+        const addChat = dict => {
+            return {
+                type: 'addChat',
+                payload: dict
+            }
+        }
+
+        // Reducers
+        function counterReducer(state = chat_state, action) {
+            if (action.type == ACTIONTYPE.addChat) {
+                id = encodeId(action.payload.chatId)
+                return {
+                    ...state,
+                    [id]:action.payload
+                }
+            }
+            else if (action.type == ACTIONTYPE.updateChat) {
+                const data = action.payload
+                const id = encodeId(data.chatId)
+                return {
+                    ...state,
+                    [id]: data
+                }
+            }
+            return state;
+        }
+
+        // Create a Redux store holding the state of your app.
+        // Its API is { subscribe, dispatch, getState }.
+        let store = createStore(counterReducer)
+
+        // You can use subscribe() to update the UI in response to state changes.
+        // Normally you'd use a view binding library (e.g. React Redux) rather than subscribe() directly.
+        // There may be additional use cases where it's helpful to subscribe as well.
+
+        store.subscribe(() => console.log(store.getState()))
+
+        // // The only way to mutate the internal state is to dispatch an action.
+        // // The actions can be serialized, logged or stored and later replayed.
+        // store.dispatch({ type: 'counter/incremented' })
+        // // {value: 1}
+        // store.dispatch({ type: 'counter/incremented' })
+        // // {value: 2}
+        // store.dispatch({ type: 'counter/decremented' })
+// {value: 1}
+    </script>
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new ReconnectingWebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function (e) {
+            console.log(e)
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const room = document.querySelector('#room');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'roomId': room.value || 1
+            }));
+            messageInputDom.value = '';
+            room.value = '';
+        };
+    </script>
+</body>
+
+</html>
