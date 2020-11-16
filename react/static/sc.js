@@ -5,7 +5,9 @@ const audio = new Audio('/static/sound.mp3');
 function playSound() {
     audio.play()
     .then()
-    .catch()
+    .catch(e => {
+        //
+    })
 }
 
 window.onfocus = function () { 
@@ -108,15 +110,8 @@ class Header extends React.Component {
             this.scrollToBottom();
             // console.log('Scrolled')
             // console.log(this.props.updateSeen)
-            this.props.updateSeen()
-        }
-    }
-
-    componentDidMount() {
-        if (this.props.chat) {
-            // this.scrollToBottom();
-            // console.log(this.props.updateSeen)
-            this.props.updateSeen()
+            // console.log('Header update')
+            // this.props.updateSeen()
         }
     }
 
@@ -185,6 +180,18 @@ class Main extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.submitOnEnter = this.submitOnEnter.bind(this);
+        this.updateSeen = this.updateSeen.bind(this);
+    }
+    
+    windowEvent = (event) => {
+        // console.log("SSSSSSSSSSS", event, this)
+        if(event.type == 'focus') {
+            // console.log(event, 'focus')
+            this.updateSeen();
+        } else if(event.type == 'blur') {
+            // console.log(event, 'blur')
+
+        }
     }
 
     serialize_rooms(chats) {
@@ -287,6 +294,8 @@ class Main extends React.Component {
             // console.log("socket opened", data)
         }
         this.chatSocket.onmessage = (data) => this.chatSocketMessage(data)
+        window.addEventListener("focus", this.windowEvent)
+        window.addEventListener("blur", this.windowEvent)
     }
 
     chatSocketMessage(data) {
@@ -333,11 +342,17 @@ class Main extends React.Component {
                                 ? this.state.chats[roomId].unseenCount : this.state.chats[roomId].unseenCount + 1
                         }
                     }
-                })
+                }, () => {                
+                // console.log(message.roomId === this.state.activeRoomId && message.user !== this.state.userId)
+                    if(message.roomId === this.state.activeRoomId && message.user !== this.state.userId) {
+                        this.updateSeen();
+                    }
+                });
 
                 if(message.roomId !== this.state.activeRoomId || !isTabActive) {
                     playSound();
                 }
+
             }
         }
     }
@@ -375,6 +390,8 @@ class Main extends React.Component {
                     ...this.state.chats,
                     ...newChatState()
                 }
+            },() => {
+                this.updateSeen();
             })
             // console.log(newChatState(), "New state", room, activePanel, this.state)
         }
@@ -382,7 +399,9 @@ class Main extends React.Component {
     }
 
     updateSeen() {
+        // console.log("update seem")
         if (isTabActive) {
+            // console.log("update seem ok")
             this.chatSocket.send(JSON.stringify({
                 type: 'seenStatus',
                 roomId: this.state.activeRoomId
@@ -391,7 +410,7 @@ class Main extends React.Component {
     }
 
     submitOnEnter(event) {
-        if (event.keyCode === 13) {
+        if (event.keyCode === 13 && !event.shiftKey) {
             this.handleSubmit(event);
         }
     }
