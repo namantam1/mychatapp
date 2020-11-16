@@ -1,4 +1,5 @@
 const encodeRoomId = e => 'room_' + e;
+var isTabActive = true
 const audio = new Audio('/static/sound.mp3');
 
 function playSound() {
@@ -6,6 +7,14 @@ function playSound() {
     .then()
     .catch()
 }
+
+window.onfocus = function () { 
+    isTabActive = true; 
+  }; 
+  
+  window.onblur = function () { 
+    isTabActive = false;
+  }; 
 
 function ListItem(props) {
     let status;
@@ -326,7 +335,7 @@ class Main extends React.Component {
                     }
                 })
 
-                if(message.roomId !== this.state.activeRoomId) {
+                if(message.roomId !== this.state.activeRoomId || !isTabActive) {
                     playSound();
                 }
             }
@@ -373,10 +382,12 @@ class Main extends React.Component {
     }
 
     updateSeen() {
-        this.chatSocket.send(JSON.stringify({
-            type: 'seenStatus',
-            roomId: this.state.activeRoomId
-        }))
+        if (isTabActive) {
+            this.chatSocket.send(JSON.stringify({
+                type: 'seenStatus',
+                roomId: this.state.activeRoomId
+            }))
+        }
     }
 
     submitOnEnter(event) {
