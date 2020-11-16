@@ -1,4 +1,11 @@
 const encodeRoomId = e => 'room_' + e;
+const audio = new Audio('/static/sound.mp3');
+
+function playSound() {
+    audio.play()
+    .then()
+    .catch()
+}
 
 function ListItem(props) {
     let status;
@@ -166,7 +173,6 @@ class Main extends React.Component {
             + window.location.host
             + '/ws/chat/'
         )
-
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.submitOnEnter = this.submitOnEnter.bind(this);
@@ -319,6 +325,10 @@ class Main extends React.Component {
                         }
                     }
                 })
+
+                if(message.roomId !== this.state.activeRoomId) {
+                    playSound();
+                }
             }
         }
     }
