@@ -8,26 +8,25 @@
     <link rel="icon shortcut" href="{{request.user.profile.image}}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="/static/style.css">
-
-    <!-- Don't use this in production: -->
-    {% comment %} <script src="/static/react.development.js"></script>
-    <script src="/static/react-dom.development.js"></script> {% endcomment %}
-    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">    
     <script>
         const self_user_id = {{ request.user.id }}
     </script>
-    {% comment %} <script src="/static/babel.min.js"></script> {% endcomment %}
-
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="/static/rcwebsocket.js"></script>
-    <script src="/static/sc.js" type="text/babel"></script>
-
 </head>
 
 <body>
     <div id="root"></div>
+    <!-- production: -->
+    <script src="/static/rcwebsocket.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="/static/pro.js"></script>
+    <!-- dev -->
+    <!-- <script src="/static/rcwebsocket.js"></script>
+    <script src="/static/react.development.js"></script>
+    <script src="/static/react-dom.development.js"></script>
+    <script src="/static/babel.min.js"></script>
+    <script src="/static/sc.js" type="text/babel"></script> -->
 </body>
 
 </html>
